@@ -24,23 +24,26 @@ export function StudioJournal() {
             <p className="font-mono">SELECTED FRAMES / 01—03</p>
             <p>Recortes em que o processo deixa de ser explicação e passa a ser imagem</p>
           </div>
-          <div className="studio-stills__grid">
-            {studioStills.map((still) => (
-              <figure className="studio-still" data-reveal key={still.src}>
-                <AssetMedia
-                  src={still.src}
-                  alt={still.alt}
-                  label={still.title}
-                  sizes="(max-width: 767px) 82vw, 38vw"
-                  className="studio-still__media"
-                />
-                <figcaption>
-                  <span className="font-mono">{still.number}</span>
-                  <strong>{still.title}</strong>
-                  <span className="font-mono">{still.context}</span>
-                </figcaption>
-              </figure>
-            ))}
+          <div className="studio-stills__viewport" data-horizontal-gallery>
+            <div className="studio-stills__grid" data-horizontal-track>
+              {studioStills.map((still) => (
+                <figure className="studio-still" data-reveal key={still.src}>
+                  <AssetMedia
+                    src={still.src}
+                    alt={still.alt}
+                    label={still.title}
+                    sizes="(max-width: 767px) 82vw, 48vw"
+                    className="studio-still__media"
+                    imageClassName="studio-still__zoom-image"
+                  />
+                  <figcaption>
+                    <span className="font-mono">{still.number}</span>
+                    <strong>{still.title}</strong>
+                    <span className="font-mono">{still.context}</span>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
           </div>
         </div>
 

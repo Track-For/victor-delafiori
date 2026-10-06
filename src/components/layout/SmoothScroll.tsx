@@ -12,14 +12,13 @@ export function SmoothScroll() {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced) return;
 
-    const infinite = pathname === "/";
     const lenis = new Lenis({
-      infinite,
+      infinite: false,
       lerp: 0.08,
-      overscroll: !infinite,
+      overscroll: true,
       smoothWheel: true,
       stopInertiaOnNavigate: true,
-      syncTouch: infinite,
+      syncTouch: false,
     });
     const update = (time: number) => lenis.raf(time * 1000);
     const handleClick = (event: MouseEvent) => {
@@ -30,6 +29,20 @@ export function SmoothScroll() {
       const target = document.querySelector<HTMLElement>(id);
       if (!target) return;
       event.preventDefault();
+
+      const horizontalTrack = document.querySelector<HTMLElement>("[data-home-track]");
+      const horizontalTrigger = ScrollTrigger.getById("home-horizontal");
+      if (horizontalTrack?.contains(target) && horizontalTrigger && window.innerWidth > 900) {
+        const trackBounds = horizontalTrack.getBoundingClientRect();
+        const targetBounds = target.getBoundingClientRect();
+        const targetOffset = targetBounds.left - trackBounds.left;
+        const horizontalDistance = Math.max(1, horizontalTrack.scrollWidth - window.innerWidth);
+        const progress = Math.min(1, Math.max(0, targetOffset / horizontalDistance));
+        const scrollPosition = horizontalTrigger.start + (horizontalTrigger.end - horizontalTrigger.start) * progress;
+        lenis.scrollTo(scrollPosition);
+        return;
+      }
+
       lenis.scrollTo(target, { offset: -72 });
     };
 
@@ -37,7 +50,7 @@ export function SmoothScroll() {
     gsap.ticker.add(update);
     gsap.ticker.lagSmoothing(0);
     document.addEventListener("click", handleClick);
-    document.documentElement.toggleAttribute("data-infinite-scroll", infinite);
+    document.documentElement.removeAttribute("data-infinite-scroll");
 
     const refreshFrame = window.requestAnimationFrame(() => ScrollTrigger.refresh());
 

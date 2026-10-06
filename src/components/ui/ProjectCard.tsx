@@ -15,13 +15,16 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
         aria-label={`Ver ${project.client}`}
       >
         <div style={{ viewTransitionName: `project-${project.slug}` }}>
-          <AssetMedia
-            src={project.image}
-            alt={`Imagem principal de ${project.client}`}
-            label={`PROJECT IMAGE ${project.number}`}
-            sizes="(max-width: 768px) 100vw, 62vw"
-            className="project-card__media"
-          />
+          <div className="project-card__curtain" data-curtain-reveal>
+            <AssetMedia
+              src={project.image}
+              alt={`Imagem principal de ${project.client}`}
+              label={`PROJECT IMAGE ${project.number}`}
+              sizes="(max-width: 768px) 100vw, 62vw"
+              className="project-card__media"
+              imageClassName="project-card__zoom-image"
+            />
+          </div>
         </div>
       </Link>
       <div className="project-card__info">

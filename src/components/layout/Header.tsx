@@ -21,7 +21,7 @@ export function Header() {
     <>
       <header className="site-header" style={{ viewTransitionName: "site-header" }}>
         <Link href="/" aria-label="Ir para o início" className="site-header__brand">
-          <BrandLogo priority />
+          <BrandLogo preload />
         </Link>
         <nav className="site-header__nav" aria-label={uiCopy.navigation.mainLabel}>
           {navigation.map((item) => (

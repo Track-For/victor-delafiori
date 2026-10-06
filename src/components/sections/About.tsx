@@ -8,12 +8,13 @@ export function About() {
   return (
     <section className="about section-dark" id="about">
       <div className="page-shell about__grid">
-        <div className="about__media" data-reveal>
+        <div className="about__media" data-column-reveal>
           <AssetMedia
             src="/images/victor-delafiori.jpg"
             alt="Retrato de Victor Delafiori usando óculos escuros"
             label="FOTO DO DESIGNER"
             sizes="(max-width: 768px) 100vw, 46vw"
+            imageClassName="about__zoom-image"
           />
         </div>
         <div className="about__content">

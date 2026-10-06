@@ -3,6 +3,7 @@ import { BrandUnderstanding } from "@/components/sections/BrandUnderstanding";
 import { Contact } from "@/components/sections/Contact";
 import { Differentiation } from "@/components/sections/Differentiation";
 import { Hero } from "@/components/sections/Hero";
+import { ImpactStatements } from "@/components/sections/ImpactStatements";
 import { Manifesto } from "@/components/sections/Manifesto";
 import { Philosophy } from "@/components/sections/Philosophy";
 import { Process } from "@/components/sections/Process";
@@ -22,6 +23,7 @@ export default function HomePage() {
       <SelectedWork />
       <StudioJournal />
       <SymbolStory />
+      <ImpactStatements />
       <Manifesto />
       <Process />
       <Services />

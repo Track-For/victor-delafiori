@@ -113,6 +113,23 @@ export const homeContent = {
     ],
     body: "Até restar apenas o que torna aquela marca única",
   },
+  impact: [
+    {
+      label: "03.1 — RECONHECIMENTO",
+      lines: ["ANTES DE LER,", "JÁ PRECISA", "PARECER SUA"],
+      accent: "parecer sua",
+    },
+    {
+      label: "03.2 — DIFERENÇA",
+      lines: ["SE PODERIA SER", "DE QUALQUER UM,", "NÃO É IDENTIDADE"],
+      accent: "não é identidade",
+    },
+    {
+      label: "03.3 — PRESENÇA",
+      lines: ["A MARCA CERTA", "NÃO PEDE ATENÇÃO", "ELA PERMANECE"],
+      accent: "ela permanece",
+    },
+  ],
   process: {
     label: "04 - PROCESS",
     title: ["UMA IDENTIDADE", "NÃO COMEÇA", "COM UM DESENHO"],
