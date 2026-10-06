@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Victor Delafiori
 
-## Getting Started
+Site editorial de identidade visual desenvolvido com Next.js 16, React 19, TypeScript, Tailwind CSS 4, GSAP e Lenis.
 
-First, run the development server:
+## Executar
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Conteúdo
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Dados comerciais: `src/data/company.ts`
+- Projetos: `src/data/projects.ts`
+- Serviços: `src/data/services.ts`
+- Processo: `src/data/process.ts`
 
-## Learn More
+## Ativos
 
-To learn more about Next.js, take a look at the following resources:
+A fotografia de Victor e cinco vídeos do estúdio estão integrados à home. As capas e seis recortes editoriais foram extraídos do próprio material para preservar a direção visual e evitar o carregamento antecipado dos arquivos completos.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Os três cases publicados — Napoleão, Rossi e Mayane Ferreira — usam frames reais extraídos dos vídeos. Os logos oficiais do estúdio ainda podem ser adicionados nos caminhos listados em `RELATORIO.md`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Validação
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run build
+npm run lint
+npx tsc --noEmit
+```
