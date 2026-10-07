@@ -143,6 +143,20 @@ const scrollToScene = async (selector, ratio = 0.5) => {
       return value;
     };
     if (innerWidth <= 900) {
+      const viewport = element.closest('[data-mobile-identity-viewport][data-mobile-horizontal-enabled]');
+      const track = viewport?.querySelector('[data-mobile-identity-track]');
+      const spacer = viewport?.parentElement?.classList.contains('pin-spacer') ? viewport.parentElement : null;
+      if (viewport && track && spacer) {
+        const horizontalDistance = Math.max(1, track.scrollWidth - viewport.clientWidth);
+        const progress = Math.min(1, Math.max(0, element.offsetLeft / horizontalDistance));
+        const measuredStart = Number(viewport.dataset.mobileHorizontalStart);
+        const measuredEnd = Number(viewport.dataset.mobileHorizontalEnd);
+        const hasMeasuredRange = Number.isFinite(measuredStart) && Number.isFinite(measuredEnd) && measuredEnd > measuredStart;
+        const start = hasMeasuredRange ? measuredStart : spacer.getBoundingClientRect().top + scrollY - 72;
+        const scrollRange = hasMeasuredRange ? measuredEnd - measuredStart : Math.max(1, spacer.offsetHeight - viewport.offsetHeight);
+        window.scrollTo({ top: start + scrollRange * progress, behavior: 'instant' });
+        return { selector: ${JSON.stringify(selector)}, mobile: true, horizontal: true, progress, start, scrollRange, scrollY };
+      }
       element.scrollIntoView({ block: 'center', behavior: 'instant' });
       return { selector: ${JSON.stringify(selector)}, mobile: true, scrollY };
     }
@@ -166,24 +180,74 @@ const scrollToScene = async (selector, ratio = 0.5) => {
         clipPath: frame ? getComputedStyle(frame).clipPath : null,
         imageTransform: image ? getComputedStyle(image).transform : null,
       } : null,
+      mobileHorizontal: (() => {
+        const viewport = document.querySelector('[data-mobile-identity-viewport]');
+        const track = document.querySelector('[data-mobile-identity-track]');
+        return viewport && track ? {
+          progress: viewport.dataset.mobileHorizontalProgress,
+          start: viewport.dataset.mobileHorizontalStart,
+          end: viewport.dataset.mobileHorizontalEnd,
+          scrollLeft: viewport.scrollLeft,
+          transform: getComputedStyle(track).transform,
+          inlineStyle: track.getAttribute('style'),
+        } : null;
+      })(),
     };
   })()`);
   console.log(JSON.stringify({ before, requested, settled }));
 };
 
+const scrollPinnedProgress = async (selector, progress) => {
+  const before = await evaluate(`(() => {
+    const element = document.querySelector(${JSON.stringify(selector)});
+    const lines = Array.from(element?.querySelectorAll('.essence-lines line') || []);
+    const track = document.querySelector('[data-mobile-identity-track]');
+    return {
+      lineOffsets: lines.map((line) => getComputedStyle(line).strokeDashoffset),
+      trackTransform: track ? getComputedStyle(track).transform : null,
+    };
+  })()`);
+  const requested = await evaluate(`(() => {
+    const element = document.querySelector(${JSON.stringify(selector)});
+    if (!element) return false;
+    const spacer = element.parentElement?.classList.contains('pin-spacer') ? element.parentElement : null;
+    if (!spacer) return false;
+    const scrollRange = Math.max(1, spacer.offsetHeight - element.offsetHeight);
+    const start = spacer.getBoundingClientRect().top + scrollY - 72;
+    window.scrollTo({ top: start + scrollRange * ${Number(progress)}, behavior: 'instant' });
+    return { selector: ${JSON.stringify(selector)}, progress: ${Number(progress)}, start, scrollRange, scrollY };
+  })()`);
+  await pause(scenePause);
+  const settled = await evaluate(`(() => {
+    const element = document.querySelector(${JSON.stringify(selector)});
+    const lines = Array.from(element?.querySelectorAll('.essence-lines line') || []);
+    const track = document.querySelector('[data-mobile-identity-track]');
+    return {
+      scrollY,
+      lineOffsets: lines.map((line) => getComputedStyle(line).strokeDashoffset),
+      trackTransform: track ? getComputedStyle(track).transform : null,
+    };
+  })()`);
+  console.log(JSON.stringify({ pinned: selector, before, requested, settled }));
+};
+
+await scrollPinnedProgress('[data-essence-map]', 0.08);
+await capture("01-essence-start");
+await scrollPinnedProgress('[data-essence-map]', 0.62);
+await capture("02-essence-lines");
 await scrollToScene("[data-identity-preview]:nth-child(1)");
-await capture("01-identity-first");
+await capture("03-identity-first");
 await scrollToScene("[data-identity-preview]:nth-child(2)");
-await capture("02-identity-second");
+await capture("04-identity-second");
 await scrollToScene("[data-identity-editorial]");
-await capture("03-identity-editorial");
+await capture("05-identity-editorial");
 await scrollToScene(".symbol-story__stage");
-await capture("04-symbol");
+await capture("06-symbol");
 await scrollToScene(".services__title");
-await capture("05-services");
+await capture("07-services");
 await evaluate("window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' })");
 await pause(1400);
-await capture("06-footer-hero");
+await capture("08-footer-hero");
 
 const diagnostics = await evaluate(`(() => ({
   url: location.href,

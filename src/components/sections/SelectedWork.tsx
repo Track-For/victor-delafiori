@@ -16,41 +16,43 @@ export function SelectedWork() {
           <em>{homeContent.work.titleAccent}</em>
         </h2>
 
-        <div className="identity-reel" aria-label="Identidades selecionadas">
-          {projects.map((project) => (
-            <article className="identity-preview" data-identity-preview data-horizontal-snap key={project.slug}>
-              <Link
-                href={`/projetos/${project.slug}`}
-                className="identity-preview__media-link"
-                data-cursor="VIEW"
-                aria-label={`Ver ${project.client}`}
-              >
-                <div className="identity-preview__frame" style={{ viewTransitionName: `project-${project.slug}` }}>
-                  <AssetMedia
-                    src={project.image}
-                    alt={`Imagem principal de ${project.client}`}
-                    label={`PROJECT IMAGE ${project.number}`}
-                    sizes="(max-width: 900px) 100vw, 62vw"
-                    className="identity-preview__media"
-                    imageClassName="identity-preview__image"
-                  />
-                </div>
-              </Link>
-
-              <div className="identity-preview__info">
-                <ProjectNumber current={project.number} total={projects.length} />
-                <div>
-                  <h3>{project.client}</h3>
-                  <p className="identity-preview__meta font-mono">{project.industry}</p>
-                </div>
-                <p className="identity-preview__concept">{project.concept}</p>
-                <Link className="text-link text-link--light" href={`/projetos/${project.slug}`} data-cursor="VIEW">
-                  {homeContent.work.cta}
-                  <ArrowUpRight aria-hidden="true" size={16} strokeWidth={1.5} />
+        <div className="identity-reel__viewport" data-mobile-identity-viewport>
+          <div className="identity-reel" data-mobile-identity-track aria-label="Identidades selecionadas">
+            {projects.map((project) => (
+              <article className="identity-preview" data-identity-preview data-horizontal-snap key={project.slug}>
+                <Link
+                  href={`/projetos/${project.slug}`}
+                  className="identity-preview__media-link"
+                  data-cursor="VIEW"
+                  aria-label={`Ver ${project.client}`}
+                >
+                  <div className="identity-preview__frame" style={{ viewTransitionName: `project-${project.slug}` }}>
+                    <AssetMedia
+                      src={project.image}
+                      alt={`Imagem principal de ${project.client}`}
+                      label={`PROJECT IMAGE ${project.number}`}
+                      sizes="(max-width: 900px) 100vw, 62vw"
+                      className="identity-preview__media"
+                      imageClassName="identity-preview__image"
+                    />
+                  </div>
                 </Link>
-              </div>
-            </article>
-          ))}
+
+                <div className="identity-preview__info">
+                  <ProjectNumber current={project.number} total={projects.length} />
+                  <div>
+                    <h3>{project.client}</h3>
+                    <p className="identity-preview__meta font-mono">{project.industry}</p>
+                  </div>
+                  <p className="identity-preview__concept">{project.concept}</p>
+                  <Link className="text-link text-link--light" href={`/projetos/${project.slug}`} data-cursor="VIEW">
+                    {homeContent.work.cta}
+                    <ArrowUpRight aria-hidden="true" size={16} strokeWidth={1.5} />
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
 
         <div className="identity-editorial" data-identity-editorial data-horizontal-snap>

@@ -585,17 +585,61 @@ export function HomeMotion({ children }: { children: React.ReactNode }) {
           ),
         });
 
+        const mobileIdentityViewport = rootElement.querySelector<HTMLElement>("[data-mobile-identity-viewport]");
+        const mobileIdentityTrack = rootElement.querySelector<HTMLElement>("[data-mobile-identity-track]");
+        let mobileIdentityTween: gsap.core.Tween | undefined;
+        if (mobileIdentityViewport && mobileIdentityTrack) {
+          mobileIdentityViewport.setAttribute("data-mobile-horizontal-enabled", "");
+          const horizontalDistance = () => Math.max(0, mobileIdentityTrack.scrollWidth - mobileIdentityViewport.clientWidth);
+          mobileIdentityTween = gsap.to(mobileIdentityTrack, {
+            x: () => -horizontalDistance(),
+            ease: "none",
+            force3D: true,
+            scrollTrigger: {
+              id: "mobile-identity-horizontal",
+              trigger: mobileIdentityViewport,
+              start: "top top+=72",
+              end: () => `+=${Math.max(window.innerHeight * 1.8, horizontalDistance() * 1.25)}`,
+              pin: true,
+              scrub: 0.65,
+              anticipatePin: 1,
+              invalidateOnRefresh: true,
+              onRefresh: (self) => {
+                mobileIdentityViewport.dataset.mobileHorizontalStart = String(self.start);
+                mobileIdentityViewport.dataset.mobileHorizontalEnd = String(self.end);
+              },
+              onUpdate: (self) => {
+                mobileIdentityViewport.dataset.mobileHorizontalProgress = self.progress.toFixed(4);
+              },
+              onEnter: () => { mobileIdentityTrack.style.willChange = "transform"; },
+              onEnterBack: () => { mobileIdentityTrack.style.willChange = "transform"; },
+              onLeave: () => { mobileIdentityTrack.style.willChange = "auto"; },
+              onLeaveBack: () => { mobileIdentityTrack.style.willChange = "auto"; },
+            },
+          });
+        }
+
         gsap.utils.toArray<HTMLElement>("[data-identity-preview]", rootElement).forEach((preview) => {
           const frame = preview.querySelector<HTMLElement>(".identity-preview__frame");
           const image = preview.querySelector<HTMLElement>(".identity-preview__image");
+          const trigger = mobileIdentityTween
+            ? {
+                trigger: preview,
+                containerAnimation: mobileIdentityTween,
+                start: "left 96%",
+                end: "left 42%",
+                scrub: 0.55,
+                invalidateOnRefresh: true,
+              }
+            : {
+                trigger: preview,
+                start: "top 92%",
+                end: "top 48%",
+                scrub: 0.55,
+                invalidateOnRefresh: true,
+              };
           const timeline = gsap.timeline({
-            scrollTrigger: {
-              trigger: preview,
-              start: "top 92%",
-              end: "top 48%",
-              scrub: 0.55,
-              invalidateOnRefresh: true,
-            },
+            scrollTrigger: trigger,
           });
           timeline.fromTo(
             preview,
@@ -638,18 +682,39 @@ export function HomeMotion({ children }: { children: React.ReactNode }) {
         if (essenceMap && essenceResult) {
           const selectedWords = essenceWords.filter((_, index) => [1, 3, 4, 6].includes(index));
           const supportingWords = essenceWords.filter((_, index) => ![1, 3, 4, 6].includes(index));
+          const lineGroup = essenceMap.querySelector<SVGElement>(".essence-lines");
+          const lines = gsap.utils.toArray<SVGLineElement>(".essence-lines line", essenceMap);
           gsap.timeline({
             scrollTrigger: {
               trigger: essenceMap,
-              start: "top 78%",
-              end: "center 42%",
-              scrub: 0.7,
+              start: "top top+=72",
+              end: () => `+=${Math.max(620, window.innerHeight * 0.95)}`,
+              pin: true,
+              scrub: 0.65,
+              anticipatePin: 1,
               invalidateOnRefresh: true,
             },
           })
-            .fromTo(supportingWords, { autoAlpha: 0.7 }, { autoAlpha: 0.16, scale: 0.9, stagger: 0.025, duration: 0.55 }, 0)
-            .fromTo(selectedWords, { scale: 0.88 }, { scale: 1.08, autoAlpha: 1, stagger: 0.035, duration: 0.58 }, 0.06)
-            .fromTo(essenceResult, { scale: 0.7, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.35 }, 0.5);
+            .fromTo(
+              supportingWords,
+              { xPercent: (index) => index % 2 === 0 ? -24 : 24, autoAlpha: 0.64 },
+              { xPercent: 0, autoAlpha: 0.16, scale: 0.9, stagger: 0.025, duration: 0.58, ease: "none" },
+              0,
+            )
+            .fromTo(
+              selectedWords,
+              { xPercent: (index) => index % 2 === 0 ? -38 : 38, scale: 0.86, autoAlpha: 0.32 },
+              { xPercent: 0, scale: 1.08, autoAlpha: 1, stagger: 0.035, duration: 0.62, ease: "none" },
+              0.04,
+            )
+            .fromTo(lineGroup, { autoAlpha: 0.08 }, { autoAlpha: 0.72, duration: 0.2, ease: "none" }, 0.1)
+            .fromTo(
+              lines,
+              { strokeDasharray: 520, strokeDashoffset: 520 },
+              { strokeDashoffset: 0, stagger: 0.035, duration: 0.64, ease: "none" },
+              0.12,
+            )
+            .fromTo(essenceResult, { scale: 0.7, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.32 }, 0.58);
         }
 
         const symbolStage = rootElement.querySelector<HTMLElement>("[data-symbol-stage]");
@@ -732,6 +797,17 @@ export function HomeMotion({ children }: { children: React.ReactNode }) {
         setupImpactCopy();
         setupCurtains();
         setupAboutReveal();
+
+        return () => {
+          mobileIdentityViewport?.removeAttribute("data-mobile-horizontal-enabled");
+          mobileIdentityViewport?.removeAttribute("data-mobile-horizontal-start");
+          mobileIdentityViewport?.removeAttribute("data-mobile-horizontal-end");
+          mobileIdentityViewport?.removeAttribute("data-mobile-horizontal-progress");
+          if (mobileIdentityTrack) {
+            mobileIdentityTrack.style.removeProperty("transform");
+            mobileIdentityTrack.style.removeProperty("will-change");
+          }
+        };
       });
 
       const refresh = () => {
