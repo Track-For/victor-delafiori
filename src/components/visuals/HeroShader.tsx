@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
+import { subscribeToMediaQuery } from "@/lib/mediaQuery";
 
 const HeroShaderScene = dynamic(() => import("./HeroShaderScene"), {
   ssr: false,
@@ -36,9 +37,7 @@ export function HeroShader() {
 
     const updateCapability = () => setCapable(media.matches && canRenderShader());
     updateCapability();
-    media.addEventListener("change", updateCapability);
-
-    return () => media.removeEventListener("change", updateCapability);
+    return subscribeToMediaQuery(media, updateCapability);
   }, []);
 
   useEffect(() => {

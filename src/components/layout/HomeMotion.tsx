@@ -7,6 +7,22 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 type ContextSafe = ReturnType<typeof useGSAP>["contextSafe"];
 
+function splitWordsOrFallback(
+  element: HTMLElement,
+  splitInstances: SplitText[],
+  wordsClass: string,
+  fallbackSelector = ":scope > span, :scope > em",
+) {
+  try {
+    const split = SplitText.create(element, { type: "words", wordsClass });
+    splitInstances.push(split);
+    return split.words;
+  } catch {
+    const fallback = Array.from(element.querySelectorAll<HTMLElement>(fallbackSelector));
+    return fallback.length ? fallback : [element];
+  }
+}
+
 function setupHeroGlobeInteraction(rootElement: HTMLDivElement, contextSafe: ContextSafe) {
   const orbit = rootElement.querySelector<HTMLElement>("[data-hero-orbit]");
   const heroSurface = rootElement.querySelector<HTMLElement>("[data-hero-drag-surface]");
@@ -120,8 +136,7 @@ function createHeroEntrance(rootElement: HTMLDivElement, splitInstances: SplitTe
   const heroTitle = rootElement.querySelector<HTMLElement>("[data-hero-title]");
   if (!heroTitle) return;
 
-  const split = SplitText.create(heroTitle, { type: "words", wordsClass: "hero-word" });
-  splitInstances.push(split);
+  const titleWords = splitWordsOrFallback(heroTitle, splitInstances, "hero-word");
   const eye = rootElement.querySelector<HTMLElement>("[data-hero-eye]");
   const eyeImage = rootElement.querySelector<HTMLElement>("[data-hero-eye-image]");
   const eyeTarget = rootElement.querySelector<HTMLElement>("[data-hero-eye-target]");
@@ -130,7 +145,7 @@ function createHeroEntrance(rootElement: HTMLDivElement, splitInstances: SplitTe
   const heroTimeline = gsap.timeline({ delay: 0.18, defaults: { ease: "power4.out" } });
 
   gsap.set(archiveCards, { autoAlpha: 0, scale: 0.34, transformOrigin: "50% 50%" });
-  gsap.set(split.words, { autoAlpha: 0, yPercent: 115 });
+  gsap.set(titleWords, { autoAlpha: 0, yPercent: 115 });
   gsap.set(heroItems, { autoAlpha: 0, y: 18 });
 
   if (eye && eyeImage && eyeTarget) {
@@ -154,7 +169,7 @@ function createHeroEntrance(rootElement: HTMLDivElement, splitInstances: SplitTe
       stagger: { each: 0.055, from: "center" },
       ease: "power3.out",
     }, "archiveReveal")
-    .to(split.words, { autoAlpha: 1, yPercent: 0, duration: 0.82, stagger: 0.04 }, "archiveReveal+=0.12")
+    .to(titleWords, { autoAlpha: 1, yPercent: 0, duration: 0.82, stagger: 0.04 }, "archiveReveal+=0.12")
     .to(heroItems, { autoAlpha: 1, y: 0, duration: 0.55, stagger: 0.08 }, "archiveReveal+=0.35");
 }
 
@@ -188,15 +203,14 @@ export function HomeMotion({ children }: { children: React.ReactNode }) {
           const rule = panel.querySelector<HTMLElement>(".impact-statement__rule");
           if (!copy) return;
 
-          const split = SplitText.create(copy, { type: "words", wordsClass: "impact-word" });
-          splitInstances.push(split);
+          const words = splitWordsOrFallback(copy, splitInstances, "impact-word", ":scope > span");
           const trigger = horizontalTween
             ? { trigger: panel, containerAnimation: horizontalTween, start: "left 82%", end: "left 42%", scrub: 0.75 }
             : { trigger: panel, start: "top 78%", end: "top 26%", scrub: 0.75 };
 
           gsap.timeline({ scrollTrigger: { ...trigger, invalidateOnRefresh: true } })
             .fromTo(
-              split.words,
+              words,
               { yPercent: panelIndex % 2 === 0 ? 120 : -120, autoAlpha: 0, rotation: panelIndex === 1 ? -3 : 0 },
               { yPercent: 0, autoAlpha: 1, rotation: 0, stagger: 0.035, duration: 0.72, ease: "none", force3D: true },
               0,
@@ -207,7 +221,7 @@ export function HomeMotion({ children }: { children: React.ReactNode }) {
 
           if (panelIndex === 1) {
             gsap.fromTo(
-              split.words,
+              words,
               { color: "rgba(241, 239, 233, 0)" },
               {
                 color: "rgba(241, 239, 233, 1)",
@@ -564,8 +578,79 @@ export function HomeMotion({ children }: { children: React.ReactNode }) {
         ScrollTrigger.batch(gsap.utils.toArray<HTMLElement>("[data-reveal]", rootElement), {
           start: "top 88%",
           once: true,
-          onEnter: (elements) => gsap.fromTo(elements, { y: 30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.72, stagger: 0.08, ease: "power3.out" }),
+          onEnter: (elements) => gsap.fromTo(
+            elements,
+            { y: 30, autoAlpha: 0 },
+            { y: 0, autoAlpha: 1, duration: 0.72, stagger: 0.08, ease: "power3.out", overwrite: "auto" },
+          ),
         });
+
+        gsap.utils.toArray<HTMLElement>("[data-identity-preview]", rootElement).forEach((preview) => {
+          const frame = preview.querySelector<HTMLElement>(".identity-preview__frame");
+          const image = preview.querySelector<HTMLElement>(".identity-preview__image");
+          const timeline = gsap.timeline({
+            scrollTrigger: {
+              trigger: preview,
+              start: "top 92%",
+              end: "top 48%",
+              scrub: 0.55,
+              invalidateOnRefresh: true,
+            },
+          });
+          timeline.fromTo(
+            preview,
+            { y: 54, autoAlpha: 0.38, scale: 0.955 },
+            { y: 0, autoAlpha: 1, scale: 1, duration: 1, ease: "none", force3D: true },
+          );
+          if (frame) {
+            timeline.fromTo(
+              frame,
+              { clipPath: "inset(0% 9% 0% 9%)" },
+              { clipPath: "inset(0% 0% 0% 0%)", duration: 1, ease: "none" },
+              0,
+            );
+          }
+          if (image) {
+            timeline.fromTo(image, { scale: 1.1 }, { scale: 1, duration: 1, ease: "none", force3D: true }, 0);
+          }
+        });
+
+        const identityEditorial = rootElement.querySelector<HTMLElement>("[data-identity-editorial]");
+        const editorialMedia = identityEditorial?.querySelector<HTMLElement>("[data-identity-editorial-media]");
+        const editorialCopy = identityEditorial?.querySelector<HTMLElement>("[data-identity-editorial-copy]");
+        if (identityEditorial && editorialMedia && editorialCopy) {
+          gsap.timeline({
+            scrollTrigger: {
+              trigger: identityEditorial,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: 0.65,
+              invalidateOnRefresh: true,
+            },
+          })
+            .fromTo(editorialMedia, { yPercent: 5 }, { yPercent: -5, duration: 1, ease: "none", force3D: true }, 0)
+            .fromTo(editorialCopy, { yPercent: -4 }, { yPercent: 4, duration: 1, ease: "none", force3D: true }, 0);
+        }
+
+        const essenceMap = rootElement.querySelector<HTMLElement>("[data-essence-map]");
+        const essenceResult = rootElement.querySelector<HTMLElement>("[data-essence-result]");
+        const essenceWords = gsap.utils.toArray<HTMLElement>("[data-essence-word]", rootElement);
+        if (essenceMap && essenceResult) {
+          const selectedWords = essenceWords.filter((_, index) => [1, 3, 4, 6].includes(index));
+          const supportingWords = essenceWords.filter((_, index) => ![1, 3, 4, 6].includes(index));
+          gsap.timeline({
+            scrollTrigger: {
+              trigger: essenceMap,
+              start: "top 78%",
+              end: "center 42%",
+              scrub: 0.7,
+              invalidateOnRefresh: true,
+            },
+          })
+            .fromTo(supportingWords, { autoAlpha: 0.7 }, { autoAlpha: 0.16, scale: 0.9, stagger: 0.025, duration: 0.55 }, 0)
+            .fromTo(selectedWords, { scale: 0.88 }, { scale: 1.08, autoAlpha: 1, stagger: 0.035, duration: 0.58 }, 0.06)
+            .fromTo(essenceResult, { scale: 0.7, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.35 }, 0.5);
+        }
 
         const symbolStage = rootElement.querySelector<HTMLElement>("[data-symbol-stage]");
         const reference = symbolStage?.querySelector<HTMLElement>('[data-symbol-frame="reference"]');
@@ -585,6 +670,62 @@ export function HomeMotion({ children }: { children: React.ReactNode }) {
             .to(attributes, { autoAlpha: 0, duration: 0.16 }, 0.72);
         }
 
+        gsap.utils.toArray<HTMLElement>("[data-manifesto-frame]", rootElement).forEach((frame) => {
+          const words = splitWordsOrFallback(frame, splitInstances, "manifesto-word", ":scope > span");
+          gsap.fromTo(words, { yPercent: 80, autoAlpha: 0 }, {
+            yPercent: 0,
+            autoAlpha: 1,
+            duration: 0.82,
+            stagger: 0.035,
+            ease: "power3.out",
+            overwrite: "auto",
+            scrollTrigger: { trigger: frame, start: "top 84%", once: true, invalidateOnRefresh: true },
+          });
+        });
+
+        gsap.utils.toArray<HTMLElement>("[data-process-card]", rootElement).forEach((card, index) => {
+          const numeral = card.querySelector<HTMLElement>(".process-card__background");
+          const content = card.querySelector<HTMLElement>(".process-card__content");
+          if (numeral) {
+            gsap.fromTo(numeral, { xPercent: 12 }, {
+              xPercent: -10,
+              ease: "none",
+              force3D: true,
+              scrollTrigger: { trigger: card, start: "top bottom", end: "bottom top", scrub: 0.6, invalidateOnRefresh: true },
+            });
+          }
+          if (content) {
+            gsap.fromTo(content, { y: 26, autoAlpha: 0.72 }, {
+              y: 0,
+              autoAlpha: 1,
+              duration: 0.68,
+              delay: Math.min(index * 0.02, 0.08),
+              ease: "power3.out",
+              overwrite: "auto",
+              scrollTrigger: { trigger: card, start: "top 82%", once: true, invalidateOnRefresh: true },
+            });
+          }
+        });
+
+        gsap.utils.toArray<HTMLElement>(".studio-still__zoom-image, .studio-video video", rootElement).forEach((media) => {
+          gsap.fromTo(media, { scale: 1.1 }, {
+            scale: 1,
+            ease: "none",
+            force3D: true,
+            scrollTrigger: { trigger: media, start: "top 94%", end: "bottom 30%", scrub: 0.65, invalidateOnRefresh: true },
+          });
+        });
+
+        ScrollTrigger.batch(gsap.utils.toArray<HTMLElement>(".service-row", rootElement), {
+          start: "top 90%",
+          once: true,
+          onEnter: (rows) => gsap.fromTo(
+            rows,
+            { y: 34, autoAlpha: 0 },
+            { y: 0, autoAlpha: 1, duration: 0.65, stagger: 0.065, ease: "power3.out", overwrite: "auto" },
+          ),
+        });
+
         const question = rootElement.querySelector<HTMLElement>("[data-provocation-question]");
         if (question) gsap.from(question, { yPercent: 24, autoAlpha: 0, scrollTrigger: { trigger: question, start: "top 78%", end: "top 32%", scrub: 0.72 } });
 
@@ -596,13 +737,20 @@ export function HomeMotion({ children }: { children: React.ReactNode }) {
       const refresh = () => {
         if (!disposed) ScrollTrigger.refresh();
       };
+      const refreshAfterPageRestore = (event: PageTransitionEvent) => {
+        if (event.persisted) requestAnimationFrame(refresh);
+      };
       void document.fonts.ready.then(refresh);
       window.addEventListener("load", refresh, { once: true });
+      window.addEventListener("pageshow", refreshAfterPageRestore);
+      window.addEventListener("orientationchange", refresh);
       requestAnimationFrame(refresh);
 
       return () => {
         disposed = true;
         window.removeEventListener("load", refresh);
+        window.removeEventListener("pageshow", refreshAfterPageRestore);
+        window.removeEventListener("orientationchange", refresh);
         responsive.revert();
         gsap.utils.toArray<HTMLElement>("[data-curtain-reveal], [data-column-reveal]", rootElement)
           .forEach((element) => { element.style.willChange = "auto"; });

@@ -12,6 +12,7 @@
 
 # testing
 /coverage
+/.qa/chrome-*-profile/
 
 # next.js
 /.next/
