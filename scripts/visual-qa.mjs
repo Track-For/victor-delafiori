@@ -188,6 +188,9 @@ const scrollToScene = async (selector, ratio = 0.5) => {
           start: viewport.dataset.mobileHorizontalStart,
           end: viewport.dataset.mobileHorizontalEnd,
           scrollLeft: viewport.scrollLeft,
+          backgroundColor: getComputedStyle(viewport).backgroundColor,
+          isolation: getComputedStyle(viewport).isolation,
+          zIndex: getComputedStyle(viewport).zIndex,
           transform: getComputedStyle(track).transform,
           inlineStyle: track.getAttribute('style'),
         } : null;

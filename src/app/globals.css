@@ -3705,10 +3705,15 @@ button {
 
 @media (max-width: 900px) and (prefers-reduced-motion: no-preference) {
   .identity-reel__viewport[data-mobile-horizontal-enabled] {
+    position: relative;
+    z-index: 2;
+    isolation: isolate;
     display: block;
     width: 100vw;
+    min-height: calc(100dvh - 72px);
     margin-left: calc((100vw - 100%) / -2);
     overflow: hidden;
+    background: var(--black);
     touch-action: pan-y;
   }
 
